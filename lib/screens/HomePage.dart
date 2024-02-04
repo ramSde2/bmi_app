@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
 class HomePage extends StatefulWidget {
-   var username;
-   var gender;
+   String username;
+   String gender;
   var height;
   var weight;
-  HomePage({required this.height,required
+  HomePage({ this.height,
     this.weight,required this.gender,required this.username});
 
   @override
@@ -25,8 +25,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
 
     // String  bmi= ((widget.weight)/(widget.height*widget.height)*10000);
-      double weight=double.parse((widget.weight));
-        double height=double.parse((widget.height));
+      double weight=double.parse((widget.weight??0));
+        double height=double.parse((widget.height??1));
      double bmi= weight / ((height / 100) * (height / 100));
 
     return Scaffold(
@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
         elevation: 0,
         centerTitle: false,
         
-        title: Text("Hello ${widget.username}",style: TextStyle(color: Colors.black,fontSize: 24),),
+        title: Text("Hello ${widget.username??"rammmmm"}",style: TextStyle(color: Colors.black,fontSize: 24),),
         automaticallyImplyLeading: false,
         actions: [IconButton( icon: Icon(Icons.person_2), onPressed: () { 
           Navigator.push(context,MaterialPageRoute(builder: (context)=>ProfilePage(gender: widget.gender,height: widget.height,weight: widget.weight,username: widget.username,)));
