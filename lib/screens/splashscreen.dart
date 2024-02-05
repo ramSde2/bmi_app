@@ -13,55 +13,34 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   String name = '';
   String gender = '';
-  String isset = '';
+  bool isProfileSet = false;
 
-  Future<void> get_stored_pref() async {
-    try {
-      SharedPreferences pref = await SharedPreferences.getInstance();
-
-      isset =  pref.getString('isset') ?? '';
-      gender =   pref.getString('gender') ?? '';
-      name =  pref.getString('username') ?? '';
-    } catch (e) {
-      print(e.toString());
-    }
+  Future getUserInfo()async{
+    SharedPreferences preferce = await SharedPreferences.getInstance();
+    isProfileSet = preferce.getBool("isProfileSet") ?? false;
+    // name=preferce.getString("name")!;
+    // gender=preferce.getString("gender")!;
+    print(name);
+    print(gender);
   }
 
   @override
   void initState() {
     super.initState();
-    get_stored_pref();
-    print(isset);
-    print(name);
-    print(gender);
+   getUserInfo();
+   
 
     Future.delayed(
       Duration(seconds: 3),
       () {
-        if (isset.isNotEmpty) {
-          // if (isset == "true") {
-          //   Navigator.pushReplacement(
-          //     context,
-          //     MaterialPageRoute(
-          //       builder: (context) => HomePage(gender: gender, username: name),
-          //     ),
-          //   );
-          // } else {
-        //     Navigator.pushReplacement(
-        //       context,
-        //       MaterialPageRoute(
-        //         builder: (context) => UserScreen(),
-        //       ),
-        //     );
-        //   }
-        // } else {
+       
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => UserScreen(),
+              builder: (context) => isProfileSet ? HomePage(username: name,gender: gender,):UserScreen(),
             ),
           );
-        }
+        
       },
     );
   }

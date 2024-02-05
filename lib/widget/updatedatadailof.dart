@@ -6,12 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-class AddDataDialog extends StatefulWidget {
+class UpdataDataDialog extends StatefulWidget {
   @override
-  _AddDataDialogState createState() => _AddDataDialogState();
+  _UpdataDataDialogState createState() => _UpdataDataDialogState();
 }
 
-class _AddDataDialogState extends State<AddDataDialog> {
+class _UpdataDataDialogState extends State<UpdataDataDialog> {
   TextEditingController heightController = TextEditingController();
   TextEditingController weightController = TextEditingController();
   void _save(context) async {
@@ -45,8 +45,8 @@ var helper= DatabaseHelper(db);
   );
 
   try {
-    await helper.insert(_user);
-    Navigator.pop(context, true); 
+    await helper.updatedata(_user);
+    Navigator.pop(context,true);
     print(" data saved succesfully");
   } catch (e) {
   print("erro  in data daving");
@@ -56,7 +56,7 @@ var helper= DatabaseHelper(db);
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Add Data"),
+      title: Text("Update  Data"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -86,7 +86,7 @@ var helper= DatabaseHelper(db);
                   _save(context);
                  
                   
-               
+                  
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor:Colors.orange,

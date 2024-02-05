@@ -3,65 +3,125 @@
 import 'package:app_demo/model/user.dart';
 import 'package:app_demo/util/databaseHelper.dart';
 import 'package:app_demo/widget/adddatadialog.dart';
+import 'package:app_demo/widget/updatedatadailof.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 class ProfilePage extends StatefulWidget {
-  var username;
-   var gender;
-  var height;
-  var weight;
-   ProfilePage({
-    required this.username,
-    required this.gender,
-    required this.height,
-    required this.weight
-   });
-
+  
+  
+   ProfilePage();
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  DatabaseHelper databaseHelper = DatabaseHelper();
+  // DatabaseHelper databaseHelper = DatabaseHelper();
  late List<User> userlist = [];
+ String name="";
+ String gender="";
+ String height="";
+ String weight="";
  int count=0;
- void updateListView() {
+ Future getUserInfo()async{
+    SharedPreferences preferce = await SharedPreferences.getInstance();
+    
+    name=preferce.getString("name")!;
+    gender=preferce.getString("gender")!;
+    print(name);
+    print(gender);
+  }
+ void updateListView() async {
+ Database db=await openDatabase(
+  // Set the path to the database. Note: Using the `join` function from the
+  // `path` package is best practice to ensure the path is correctly
+  // constructed for each platform.
+  join(await getDatabasesPath(), 'userinfo.db'),
+   onCreate: (db, version) {
+    // Run the CREATE TABLE statement on the database.
+    return db.execute(
+     'CREATE TABLE userinfotable('
+        'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+        'height TEXT, '
+        'weight TEXT, '
+        'date TEXT)',
+    );
+   
 
-		final Future<Database> dbFuture = databaseHelper.initializeDatabase();
-		dbFuture.then((database) {
-
-			Future<List<User>> noteListFuture = databaseHelper.getNoteList();
+  },
+  // Set the version. This executes the onCreate function and provides a
+  // path to perform database upgrades and downgrades.
+  version: 1,
+);
+var helper= DatabaseHelper(db);
+		Future<List<User>> noteListFuture = helper.getNoteList();
 			noteListFuture.then((noteList) {
 				setState(() {
 				  userlist = noteList.toList();
 				  count = noteList.length;
+          height=userlist[userlist.length-1].height;
+          weight=userlist[userlist.length-1].weight;
 				});
 			});
-		});
+      
+		
   }
-  
-  void _delete(BuildContext context, User note) async {
 
-		int result = await databaseHelper.deleteNote(note.id);
-		if (result != 0) {
+  void _showAddDataDialog(context,) async {
+  bool dataUpdated = await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AddDataDialog();
+    },
+  );
+
+  if (dataUpdated != null && dataUpdated) {
+    // Data is updated, rebuild the state or perform any necessary actions
+    updateListView(); 
+    // Call your method to update the data in the profile
+  }
+}
+void _showEditDataDialog(context) async {
+  bool dataUpdated = await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return  UpdataDataDialog();
+    },
+  );
+
+  if (dataUpdated != null && dataUpdated) {
+    // Data is updated, rebuild the state or perform any necessary actions
+    updateListView(); // Call your method to update the data in the profile
+  }
+}
+  
+  
+  // void _delete(BuildContext context, User note) async {
+
+	// 	int result = await databaseHelper.deleteNote(note.id);
+	// 	if (result != 0) {
 			
-			updateListView();
-		}
-	}
+	// 		updateListView();
+	// 	}
+	// }
+   
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    
     updateListView();
   }
 
   
   @override
   Widget build(BuildContext context) {
+   
     
-    String gender=widget.gender==0?"Male":"Female";
+    
     DateTime dt=DateTime.now();
     String date=DateFormat("yyyy-MM-dd").format(dt);
     return Scaffold(
@@ -76,19 +136,15 @@ class _ProfilePageState extends State<ProfilePage> {
                setState(() {
                  
                });
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AddDataDialog();
-                  },
-                );
+               _showAddDataDialog(context);
+                
               },
             ),
           ],
           title: Text("Profile"),
           forceMaterialTransparency: true,
              ),
-        backgroundColor:Colors.red,
+        backgroundColor:Colors.blueGrey,
        
         body: Stack(
           children: [
@@ -98,10 +154,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   height: MediaQuery.of(context).size.height/2,
                   
                     decoration: const BoxDecoration(
-                      color: Colors.red,
-                        // image: DecorationImage(
-                        //     image: AssetImage("assets/images/bg-profile.png"),
-                        //     fit: BoxFit.cover)
+                   
+                        image: DecorationImage(
+                            image: AssetImage("assets/images/bg-profile.png"),
+                            fit: BoxFit.cover)
                             ),
                     child: Stack(
                       children: <Widget>[
@@ -121,7 +177,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       radius: 65.0),
                                   Padding(
                                     padding: const EdgeInsets.only(top: 24.0),
-                                    child: Text(widget.username,
+                                    child: Text(name,
                                         style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w600,
@@ -158,7 +214,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     fontSize: 16.0,
                                                     fontWeight:
                                                         FontWeight.bold)),
-                                            Text(widget.weight,
+                                            Text(weight,
                                                 style: TextStyle(
                                                     color: Colors.white
                                                         .withOpacity(0.8),
@@ -177,7 +233,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     fontSize: 16.0,
                                                     fontWeight:
                                                         FontWeight.bold)),
-                                            Text(widget.height,
+                                            Text(height,
                                                 style: TextStyle(
                                                     color: Colors.white
                                                         .withOpacity(0.8),
@@ -218,7 +274,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                 Expanded(
                   child: ListView.builder(
-                                      itemCount: 4 ,
+                                      itemCount: userlist.length ,
                                       itemBuilder: (context, index) {
                                       
                                         return Card(
@@ -229,24 +285,20 @@ class _ProfilePageState extends State<ProfilePage> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text('Height: {userlist[index].height} cm', style: TextStyle(fontSize: 18.0)),
-                                          Text('Weight: {userlist[index].weight} kg', style: TextStyle(fontSize: 18.0)),
-                                          Text('Date: {userlist[index].date}', style: TextStyle(fontSize: 18.0)),
+                                          Text('Height: ${userlist[index].height} cm', style: TextStyle(fontSize: 18.0)),
+                                          Text('Weight: ${userlist[index].weight} kg', style: TextStyle(fontSize: 18.0)),
+                                          Text('Date: ${userlist[index].date}', style: TextStyle(fontSize: 18.0)),
                                           SizedBox(height: 16.0),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
                                               ElevatedButton(
                                                 onPressed: () {
-                                                  setState(() {
-                                                    
-                                                  });
-                                                 showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                  return AddDataDialog();
-                                  },
-                                );
+                                                  
+                                               _showEditDataDialog(context,);
+                                
+                                                
+                                                
                                                 },
                                                 child: Text('Edit'),
                                               ),

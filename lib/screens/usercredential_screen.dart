@@ -6,6 +6,7 @@ import 'package:app_demo/widget/userinput.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -28,43 +29,58 @@ class _UserScreenState extends State<UserScreen> {
   var heightController = TextEditingController();
   var weightController = TextEditingController();
  
-DatabaseHelper helper = DatabaseHelper();
  
+ Future addUser({required String name, required String gender}) async{
+    SharedPreferences prefrence = await SharedPreferences.getInstance();
+    prefrence.setString("name", name);
+    
+    prefrence.setString("gender", gender);
+    prefrence.setBool("isProfileSet", true);
+    // prefrence.setString("gender", gender);
 
+  }
 
 void _save() async {
-final Future<Database> dbFuture = helper.initializeDatabase();
-		User _user=User(DateFormat("yyyy-MM-dd").format(DateTime.now()),heightController.text.toString(), weightController.text.toString());
-dbFuture.then((database) async{
+  Database db=await openDatabase(
+  // Set the path to the database. Note: Using the `join` function from the
+  // `path` package is best practice to ensure the path is correctly
+  // constructed for each platform.
+  join(await getDatabasesPath(), 'userinfo.db'),
+   onCreate: (db, version) {
+    // Run the CREATE TABLE statement on the database.
+    return db.execute(
+     'CREATE TABLE userinfotable('
+        'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+        'height TEXT, '
+        'weight TEXT, '
+        'date TEXT)',
+    );
+   
 
-if (_user.id != null) {  // Case 1: Update operation
-			await helper.updatedata(_user);
-		}
-    else{
- await helper.insert(_user);
-    }
-			
-			
-				setState(() {
-				  
-				});
-			});
+  },
+  // Set the version. This executes the onCreate function and provides a
+  // path to perform database upgrades and downgrades.
+  version: 1,
+);
+var helper= DatabaseHelper(db);
 
-		}
+  User _user = User(
+    DateFormat("yyyy-MM-dd").format(DateTime.now()),
+    heightController.text.toString(),
+    weightController.text.toString(),
+  );
+
+  try {
+    await helper.insert(_user);
+    print(" data saved succesfully");
+  } catch (e) {
+  print("erro  in data daving");
+  }
+}
+
 		
     
-  store_to_shared_pref () async
-{
-SharedPreferences pref=await SharedPreferences.getInstance();
- String  gender=widget.selectedgender==0?"Male":"Female";
-
-await pref.setString("username",nameController.text);
-await pref.setString("gender",gender);
-await pref.setString("isset","true");
-
-
-
-}
+ 
 
 
 
@@ -90,7 +106,7 @@ await pref.setString("isset","true");
 
   @override
   Widget build(BuildContext context) {
-  
+  String gender=SelectGenderButtons().selectedgender==0?"Male":"Female";
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
@@ -160,10 +176,17 @@ await pref.setString("isset","true");
                     child: TextButton(
                     
                       onPressed: (){
-                       
-                         store_to_shared_pref ();
+                                                  addUser(name:nameController.text.toString() , gender: gender);
+
+                        
                          setState(() {
                            _save();
+                                                      addUser(name:nameController.text.toString() , gender: gender);
+
+                           print(nameController.text.toString());
+                         print(gender);
+                         
+                         
                          });
 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>
                         HomePage(gender:  SelectGenderButtons().selectedgender.toString(),

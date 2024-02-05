@@ -34,8 +34,9 @@ dependencies:
     sdk: flutter
   gap: ^3.0.1
   intl: 0.17.0
-  path: any
+  path: ^1.8.3
   path_provider: ^2.1.2
+  path_provider_android: ^2.2.2
   shared_preferences: ^2.2.2
   snackbar: ^1.0.2
   sqflite: ^2.3.2
